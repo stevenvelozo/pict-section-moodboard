@@ -9,6 +9,10 @@ const libPictApplication = require('pict-application');
 const libMoodboard = require('../../../source/Pict-Section-Moodboard.js');
 const libMoodboardImageSource = libMoodboard.ImageSource;
 
+// The built-in sticker set ships with the module; the demo seeds a couple to show them off.
+const _BUILTIN_STICKERS = libMoodboard.StickerSource.BUILTIN_STICKERS;
+function stickerUrl(pId) { let tmpHit = _BUILTIN_STICKERS.find(function (pSticker) { return pSticker.Id === pId; }); return tmpHit ? tmpHit.Url : ''; }
+
 // An inline gradient swatch, so the demo needs no network for its sample images.
 function makeSwatch(pColorA, pColorB, pAccent)
 {
@@ -81,13 +85,20 @@ class MoodboardDemoApplication extends libPictApplication
 			var tmpFlow = tmpBoard._FlowView;
 			function seedImage(pUrl, pX, pY, pW, pH) { var n = tmpFlow.addNode('MoodImage', pX, pY, '', { ImageUrl: pUrl, Fit: 'cover' }); if (n) { n.Ports = []; n.Width = pW; n.Height = pH; } }
 			function seedNote(pText, pColor, pX, pY, pW, pH) { var n = tmpFlow.addNode('MoodNote', pX, pY, '', { Text: pText, Color: pColor }); if (n) { n.Ports = []; n.Style = { BodyFill: pColor, TitleBarColor: pColor }; n.Width = pW; n.Height = pH; } }
-			function seedText(pText, pX, pY, pW, pH) { var n = tmpFlow.addNode('MoodText', pX, pY, '', { Text: pText }); if (n) { n.Ports = []; n.Width = pW; n.Height = pH; } }
-			seedImage(_SAMPLE_IMAGE, 60, 90, 300, 220);
-			seedText('live deliberately', 410, 90, 470, 120);
-			seedNote('Coastal palette: teal and warm sand.', '#ffe08a', 410, 240, 220, 150);
-			seedNote('Rounded forms, lots of light.', '#a8d8ff', 660, 240, 220, 150);
+			// The text card carries the curated font controls: a family stack, a weight, and a text color.
+			function seedText(pText, pX, pY, pW, pH, pData) { var n = tmpFlow.addNode('MoodText', pX, pY, '', Object.assign({ Text: pText }, pData || {})); if (n) { n.Ports = []; n.Width = pW; n.Height = pH; } }
+			function seedSticker(pUrl, pX, pY, pW, pH) { var n = tmpFlow.addNode('MoodSticker', pX, pY, '', { StickerUrl: pUrl }); if (n) { n.Ports = []; n.Width = pW; n.Height = pH; } }
+			seedImage(_SAMPLE_IMAGE, 60, 120, 300, 220);
+			seedText('live deliberately', 400, 110, 470, 130, { FontFamily: 'serif', FontFamilyCss: "Georgia, 'Times New Roman', Times, serif", FontWeight: 900, TextColor: '#1f2430' });
+			seedNote('Coastal palette: teal and warm sand.', '#ffe08a', 400, 260, 220, 150);
+			seedNote('Rounded forms, lots of light.', '#a8d8ff', 650, 260, 220, 150);
+			seedSticker(stickerUrl('sticker-star'), 30, 40, 90, 90);
+			seedSticker(stickerUrl('sticker-sparkle'), 820, 60, 80, 80);
+			// A solid board background (one of the curated swatches) tints the whole canvas.
+			tmpBoard.setBackgroundColor('#faf7f2');
 			tmpFlow.deselectAll();
 			tmpFlow.renderFlow();
+			tmpBoard._applyBackground();
 		}, 100);
 
 		return super.onAfterInitializeAsync(fCallback);

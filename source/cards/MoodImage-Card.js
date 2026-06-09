@@ -51,7 +51,7 @@ class MoodImageCard extends libPictFlowCard
 				{
 					PanelType: 'Template',
 					DefaultWidth: 280,
-					DefaultHeight: 190,
+					DefaultHeight: 360,
 					Title: 'Image',
 					Configuration:
 					{
@@ -62,6 +62,8 @@ class MoodImageCard extends libPictFlowCard
 								Hash: 'Moodboard-Image-Panel',
 								Template: /*html*/`
 <div class="mbp">
+	<label class="mbp-label">Image</label>
+	<button class="mbp-btn" onclick="_Pict.views['{~D:AppData.Moodboard.ViewID~}'].openPickerForCard('{~D:Record.Hash~}', 'image')">Pick from library</button>
 	<label class="mbp-label">Image URL</label>
 	<input class="mbp-input" value="{~D:Record.Data.ImageUrl~}" oninput="_Pict.views['{~D:AppData.Moodboard.ViewID~}'].setImageUrl('{~D:Record.Hash~}', this.value)">
 	<label class="mbp-label">Fit</label>
@@ -71,6 +73,13 @@ class MoodImageCard extends libPictFlowCard
 	</select>
 	<label class="mbp-label">Rotation</label>
 	<input class="mbp-range" type="range" min="-180" max="180" step="1" value="{~D:Record.Rotation~}" oninput="_Pict.views['{~D:AppData.Moodboard.ViewID~}'].setRotation('{~D:Record.Hash~}', this.value)">
+	<label class="mbp-label">Connection points</label>
+	<select class="mbp-input" onchange="_Pict.views['{~D:AppData.Moodboard.ViewID~}'].setConnectMode('{~D:Record.Hash~}', this.value)">
+		<option value="off" {~D:Record.Data.ConnectOffSel~}>Off</option>
+		<option value="edit" {~D:Record.Data.ConnectEditSel~}>While editing</option>
+		<option value="always" {~D:Record.Data.ConnectAlwaysSel~}>Always (show to viewers)</option>
+	</select>
+	<div class="mbp-hint">Drag a dot onto another card to link them. The toolbar button or pressing C toggles the selected card.</div>
 </div>`
 							}
 						]

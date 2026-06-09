@@ -1,7 +1,7 @@
 {
     "name": "pict-section-moodboard",
-    "version": "0.1.0",
-    "description": "Free-form moodboard canvas (draggable, resizable image tiles and notes) built on pict-section-flow",
+    "version": "0.2.0",
+    "description": "Free-form moodboard canvas (draggable, resizable image tiles, notes, big text, and stickers, with board backgrounds and curated fonts) built on pict-section-flow",
     "main": "source/Pict-Section-Moodboard.js",
     "files": [
         "source"
@@ -18,7 +18,7 @@
     "author": "steven velozo <steven@velozo.com>",
     "license": "MIT",
     "dependencies": {
-        "pict-section-flow": "^1.3.0",
+        "pict-section-flow": "^1.4.0",
         "pict-view": "^1.0.68"
     },
     "devDependencies": {
