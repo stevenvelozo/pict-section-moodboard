@@ -179,4 +179,71 @@ function ()
 			libExpect(tmpStub._isEditable()).to.equal(true);
 		});
 	});
+
+	suite('_hasViewAreaFrame (the box the author framed as the visible area)',
+	function ()
+	{
+		test('true when the flow reports a frame with a real width + height',
+		function ()
+		{
+			libExpect(makeStub({ _FlowView: { getFrame: () => ({ X: 0, Y: 0, Width: 1200, Height: 400 }) } })._hasViewAreaFrame()).to.equal(true);
+		});
+
+		test('false with no flow, no frame, or a degenerate (zero-size) frame',
+		function ()
+		{
+			libExpect(makeStub({ _FlowView: null })._hasViewAreaFrame()).to.equal(false);
+			libExpect(makeStub({ _FlowView: { getFrame: () => null } })._hasViewAreaFrame()).to.equal(false);
+			libExpect(makeStub({ _FlowView: { getFrame: () => ({ Width: 0, Height: 400 }) } })._hasViewAreaFrame()).to.equal(false);
+		});
+	});
+
+	// fitBoard picks the fit: a read-only board whose author framed a view area fits that frame's WIDTH (the
+	// configured visible area), everything else contains every card (zoomToFit). This is the "view mode
+	// respects the configured visible area" rule -- it holds for a plain canvas, not just a jumbotron /
+	// background, which is the whole point of letting people frame a view area on any board.
+	suite('fitBoard honors a view-area frame in view mode, whatever the display style',
+	function ()
+	{
+		function makeFitStub(pEditable, pFrame)
+		{
+			let tmpCalls = [];
+			let tmpStub = makeStub(
+			{
+				options: { Editable: pEditable },
+				_FlowView:
+				{
+					getFrame: () => pFrame,
+					fitToWidth: () => tmpCalls.push('fitToWidth'),
+					zoomToFit: () => tmpCalls.push('zoomToFit')
+				}
+			});
+			tmpStub._fitCalls = tmpCalls;
+			return tmpStub;
+		}
+
+		test('a read-only canvas board with a view-area frame fits the frame WIDTH (not a centered zoomToFit)',
+		function ()
+		{
+			let tmpStub = makeFitStub(false, { Width: 1200, Height: 400 });
+			tmpStub.fitBoard();
+			libExpect(tmpStub._fitCalls).to.deep.equal([ 'fitToWidth' ]);
+		});
+
+		test('a read-only board with no view-area frame contains every card (zoomToFit)',
+		function ()
+		{
+			let tmpStub = makeFitStub(false, null);
+			tmpStub.fitBoard();
+			libExpect(tmpStub._fitCalls).to.deep.equal([ 'zoomToFit' ]);
+		});
+
+		test('an editable board contains every card even with a frame (you edit on the full canvas)',
+		function ()
+		{
+			let tmpStub = makeFitStub(true, { Width: 1200, Height: 400 });
+			tmpStub.fitBoard();
+			libExpect(tmpStub._fitCalls).to.deep.equal([ 'zoomToFit' ]);
+		});
+	});
 });

@@ -68,6 +68,13 @@ class MoodStickerCard extends libPictFlowCard
 	<button class="mbp-btn" onclick="_Pict.views['{~D:AppData.Moodboard.ViewID~}'].openPickerForCard('{~D:Record.Hash~}', 'sticker')">Pick a sticker</button>
 	<label class="mbp-label">Sticker URL</label>
 	<input class="mbp-input" value="{~D:Record.Data.StickerUrl~}" oninput="_Pict.views['{~D:AppData.Moodboard.ViewID~}'].setStickerUrl('{~D:Record.Hash~}', this.value)">
+	<div class="mbp-stickercolors {~D:Record.Data._ColorShow~}">
+		<label class="mbp-label">Colors</label>
+		<div class="mbp-colorset">
+			<input type="color" class="mbp-color" title="Primary color" value="{~D:Record.Data.ColorPrimary~}" onchange="_Pict.views['{~D:AppData.Moodboard.ViewID~}'].setStickerColor('{~D:Record.Hash~}', 'pri', this.value)">
+			<input type="color" class="mbp-color mbp-sec {~D:Record.Data._SecColorShow~}" title="Secondary color" value="{~D:Record.Data.ColorSecondary~}" onchange="_Pict.views['{~D:AppData.Moodboard.ViewID~}'].setStickerColor('{~D:Record.Hash~}', 'sec', this.value)">
+		</div>
+	</div>
 	<label class="mbp-label">Rotation</label>
 	<input class="mbp-range" type="range" min="-180" max="180" step="1" value="{~D:Record.Rotation~}" oninput="_Pict.views['{~D:AppData.Moodboard.ViewID~}'].setRotation('{~D:Record.Hash~}', this.value)">
 	<label class="mbp-label">Connection points</label>

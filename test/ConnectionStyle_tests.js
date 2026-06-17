@@ -13,6 +13,7 @@ function makeStub(pConnections)
 		_FlowView: { flowData: { Connections: pConnections || [] }, renderFlow: function () {}, marshalFromView: function () {} },
 		_emitChange: function () {},
 		_stampConnectionSelects: libMoodboardView.prototype._stampConnectionSelects,
+		_connectionDefaults: libMoodboardView.prototype._connectionDefaults,
 		_updateConnection: libMoodboardView.prototype._updateConnection
 	};
 }
@@ -71,5 +72,29 @@ function ()
 		let tmpConnection = { Hash: 'c1', Data: {} };
 		libMoodboardView.prototype.setConnectionWidth.call(makeStub([ tmpConnection ]), 'c1', '5');
 		libExpect(tmpConnection.Data.StrokeWidth).to.equal(5);
+	});
+
+	test('setConnectionCurve stores the edge theme + marks the curve select; junk falls back to Bezier',
+	function ()
+	{
+		let tmpConnection = { Hash: 'c1', Data: {} };
+		let tmpStub = makeStub([ tmpConnection ]);
+		libMoodboardView.prototype.setConnectionCurve.call(tmpStub, 'c1', 'Orthogonal');
+		libExpect(tmpConnection.Data.EdgeTheme).to.equal('Orthogonal');
+		libExpect(tmpConnection.Data.CurveElbowSel).to.equal('selected');
+		libExpect(tmpConnection.Data.CurveBezierSel).to.equal('');
+		libMoodboardView.prototype.setConnectionCurve.call(tmpStub, 'c1', 'nonsense');
+		libExpect(tmpConnection.Data.EdgeTheme).to.equal('Bezier');
+	});
+
+	test('_connectionDefaults applies a host ConnectionDefaults (per-kit) over the built-in look',
+	function ()
+	{
+		let tmpStub = { options: { ConnectionDefaults: { StrokeColor: '#ff0000', StrokeWidth: 4, EdgeTheme: 'Straight' } } };
+		let tmpDefaults = libMoodboardView.prototype._connectionDefaults.call(tmpStub);
+		libExpect(tmpDefaults.StrokeColor).to.equal('#ff0000');
+		libExpect(tmpDefaults.StrokeWidth).to.equal(4);
+		libExpect(tmpDefaults.EdgeTheme).to.equal('Straight');
+		libExpect(tmpDefaults.TargetMarker).to.equal('arrow');
 	});
 });

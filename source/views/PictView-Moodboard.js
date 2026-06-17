@@ -103,6 +103,12 @@ const _CONNECTION_PANEL =
 		<option value="dashed" {~D:Record.Data.StyleDashedSel~}>Dashed</option>
 		<option value="dotted" {~D:Record.Data.StyleDottedSel~}>Dotted</option>
 	</select>
+	<label class="mbp-label">Curve</label>
+	<select class="mbp-input" onchange="_Pict.views['{~D:AppData.Moodboard.ViewID~}'].setConnectionCurve('{~D:Record.Hash~}', this.value)">
+		<option value="Bezier" {~D:Record.Data.CurveBezierSel~}>Curved</option>
+		<option value="Orthogonal" {~D:Record.Data.CurveElbowSel~}>Elbow</option>
+		<option value="Straight" {~D:Record.Data.CurveStraightSel~}>Straight</option>
+	</select>
 	<label class="mbp-label">Start end</label>
 	<select class="mbp-input" onchange="_Pict.views['{~D:AppData.Moodboard.ViewID~}'].setConnectionSourceMarker('{~D:Record.Hash~}', this.value)">
 		<option value="none" {~D:Record.Data.SrcNoneSel~}>None</option>
@@ -211,9 +217,9 @@ const _ViewConfiguration =
 		.mb-gear-swatch { width: 20px; height: 20px; border-radius: 5px; border: 1px solid rgba(0,0,0,0.15); cursor: pointer; padding: 0; }
 		.mb-gear-swatch:hover { transform: scale(1.1); }
 		.mb-gear-color { width: 22px; height: 22px; padding: 0; border: 1px solid rgba(0,0,0,0.15); border-radius: 5px; background: none; cursor: pointer; }
-		.mb-gear-none { position: relative; background: #fff; }
+		.mb-gear-none { position: relative; background: var(--theme-color-background-panel, #fff); }
 		.mb-gear-none::after { content: ""; position: absolute; left: 2px; right: 2px; top: 50%; height: 2px; margin-top: -1px; background: #e23b4b; transform: rotate(-45deg); }
-		.mb-gear-margin { width: 70px; padding: 4px 6px; border: 1px solid var(--theme-color-border-default, #d8dde6); border-radius: 5px; font-size: 12px; }
+		.mb-gear-margin { width: 70px; padding: 4px 6px; border: 1px solid var(--theme-color-border-default, #d8dde6); border-radius: 5px; font-size: 12px; background: var(--theme-color-background-panel, #fff); color: var(--theme-color-text-primary, #2c3140); }
 
 		/* Display-mode dropdown: one toolbar button opens this list of modes. Reuses the flow toolbar's own
 		   popup + list-item classes (so it matches the Cards / Layout menus); these just add the per-row
@@ -240,7 +246,8 @@ const _ViewConfiguration =
 		.mb-image-cover { object-fit: cover; }
 		.mb-image-contain { object-fit: contain; }
 		.mb-note { width: 100%; height: 100%; box-sizing: border-box; padding: 10px; font-family: inherit; font-size: 13px; line-height: 1.35; color: #3a3320; overflow: hidden; white-space: pre-wrap; word-break: break-word; }
-		.mb-note:empty::before, .mb-text:empty::before { content: attr(data-ph); color: rgba(0,0,0,0.28); }
+		.mb-note:empty::before { content: attr(data-ph); color: rgba(0,0,0,0.35); }
+		.mb-text:empty::before { content: attr(data-ph); color: var(--theme-color-text-secondary, rgba(0,0,0,0.35)); }
 
 		/* Big-type Text card: bold, transparent (floats), centered; the font scales with the card box
 		   (CSS container units) unless a fixed size is set. Make the card bigger and the words grow. */
@@ -260,7 +267,7 @@ const _ViewConfiguration =
 		/* Properties panel (double-click a card to open it). */
 		.mbp { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; font-size: 13px; max-height: 100%; overflow-y: auto; box-sizing: border-box; }
 		.mbp-label { font-size: 11px; font-weight: 600; color: var(--theme-color-text-secondary, #5b6376); text-transform: uppercase; letter-spacing: 0.03em; }
-		.mbp-input { width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid var(--theme-color-border-default, #d8dde6); border-radius: 6px; font-size: 13px; font-family: inherit; background: var(--theme-color-background-panel, #fff); }
+		.mbp-input { width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid var(--theme-color-border-default, #d8dde6); border-radius: 6px; font-size: 13px; font-family: inherit; background: var(--theme-color-background-panel, #fff); color: var(--theme-color-text-primary, #2c3140); }
 		.mbp-textarea { min-height: 72px; resize: vertical; line-height: 1.3; }
 		.mbp-range { width: 100%; box-sizing: border-box; margin: 2px 0; }
 		.mbp-swatches { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -268,6 +275,14 @@ const _ViewConfiguration =
 		.mbp-swatch:hover { transform: scale(1.12); }
 		.mbp-textcolor { width: 24px; height: 24px; padding: 0; border: 1px solid rgba(0,0,0,0.15); border-radius: 50%; background: none; cursor: pointer; }
 		.mbp-color { width: 100%; height: 30px; padding: 2px; border: 1px solid var(--theme-color-border-default, #d8dde6); border-radius: 6px; background: var(--theme-color-background-panel, #fff); cursor: pointer; box-sizing: border-box; }
+		/* Sticker color overrides: the whole row is hidden until a recolorable library shape is placed; the
+		   second swatch shows only for a duotone (phosphor) shape. Driven by Data._ColorShow/_SecColorShow. */
+		.mbp-stickercolors { display: none; flex-direction: column; gap: 6px; }
+		.mbp-stickercolors.mbp-show { display: flex; }
+		.mbp-colorset { display: flex; gap: 8px; align-items: center; }
+		.mbp-colorset .mbp-color { width: auto; flex: 1; }
+		.mbp-colorset .mbp-sec { display: none; }
+		.mbp-colorset .mbp-sec.mbp-show { display: block; }
 		/* A panel action button (e.g. "Pick from library", "Pick a sticker"). */
 		.mbp-btn { align-self: flex-start; padding: 5px 10px; border: 1px solid var(--theme-color-border-default, #d8dde6); border-radius: 6px; background: var(--theme-color-background-panel, #fff); color: var(--theme-color-text-primary, #222); cursor: pointer; font-size: 12px; }
 		.mbp-btn:hover { background: var(--theme-color-background-hover, #f2f2f2); }
@@ -283,22 +298,22 @@ const _ViewConfiguration =
 		.mb-gallery-head { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; border-bottom: 1px solid var(--theme-color-border-default, #eceff3); }
 		.mb-gallery-title { font-weight: 600; font-size: 15px; color: var(--theme-color-text-primary, #222); }
 		.mb-gallery-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 16px; border-bottom: 1px solid var(--theme-color-border-default, #eceff3); }
-		.mb-gallery-search { min-width: 200px; flex: 1; padding: 0.4em 0.6em; border: 1px solid var(--theme-color-border-default, #ccc); border-radius: 6px; font-size: 0.9em; }
+		.mb-gallery-search { min-width: 200px; flex: 1; padding: 0.4em 0.6em; border: 1px solid var(--theme-color-border-default, #ccc); border-radius: 6px; font-size: 0.9em; background: var(--theme-color-background-panel, #fff); color: var(--theme-color-text-primary, #2c3140); }
 		.mb-gallery-filter, .mb-gallery-sortlbl { font-size: 12px; color: var(--theme-color-text-secondary, #5b6376); display: inline-flex; gap: 5px; align-items: center; }
-		.mb-gallery-filter select, .mb-gallery-sort { padding: 5px 6px; border: 1px solid var(--theme-color-border-default, #ccc); border-radius: 6px; font-size: 13px; background: var(--theme-color-background-panel, #fff); }
+		.mb-gallery-filter select, .mb-gallery-sort { padding: 5px 6px; border: 1px solid var(--theme-color-border-default, #ccc); border-radius: 6px; font-size: 13px; background: var(--theme-color-background-panel, #fff); color: var(--theme-color-text-primary, #2c3140); }
 		.mb-gallery-btn { padding: 0.25em 0.6em; border: 1px solid var(--theme-color-border-default, #ccc); border-radius: 6px; background: var(--theme-color-background-panel, #fff); color: var(--theme-color-text-primary, #222); cursor: pointer; font-size: 0.85em; }
 		.mb-gallery-btn:hover { background: var(--theme-color-background-hover, #f2f2f2); }
 		.mb-gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; padding: 16px; overflow: auto; }
 		.mb-gallery-item { display: flex; flex-direction: column; padding: 0; border: 1px solid var(--theme-color-border-default, #e4e8ef); border-radius: 8px; background: var(--theme-color-background-secondary, #f7f8fb); cursor: pointer; overflow: hidden; text-align: left; }
 		.mb-gallery-item:hover { border-color: var(--theme-color-brand-primary, #2880a6); }
-		.mb-gallery-item img { width: 100%; height: 92px; object-fit: cover; display: block; background: #e9edf2; }
+		.mb-gallery-item img { width: 100%; height: 92px; object-fit: cover; display: block; background: var(--theme-color-background-secondary, #e9edf2); }
 		.mb-gallery-item-name { font-size: 11px; color: var(--theme-color-text-secondary, #5b6376); padding: 4px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 		/* Sticker mode: compact, square tiles with the cutout shrunk to fit (not a stretched
 		   thumbnail). box-sizing keeps the padding inside the tile width so the image never overflows. */
 		.mb-gallery-mode-sticker .mb-gallery-grid { grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); }
 		.mb-gallery-mode-sticker .mb-gallery-item { align-items: center; }
 		.mb-gallery-mode-sticker .mb-gallery-item img { width: 100%; aspect-ratio: 1 / 1; height: auto; box-sizing: border-box; padding: 14px; object-fit: contain; background: transparent; }
-		.mb-gallery-mode-sticker .mb-gallery-item-name { width: 100%; text-align: center; padding-bottom: 6px; }
+		.mb-gallery-mode-sticker .mb-gallery-item-name { width: 100%; text-align: center; padding: 4px 6px 6px; white-space: normal; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 		.mb-gallery-empty { grid-column: 1 / -1; text-align: center; color: var(--theme-color-text-secondary, #8a93a5); padding: 44px 16px; }
 	`,
 	Templates:
@@ -471,10 +486,11 @@ class PictViewMoodboard extends libPictView
 				this._boundOnResize = this._boundOnResize || (() =>
 				{
 					if (this._isEditable()) { return; }
-					// Presentation styles (jumbotron / background) are width-fit; the flow's own
-					// ResizeObserver owns re-fitting them, so the moodboard does NOT contain-fit on resize
-					// (that would fight the width-fit). Only the plain read-only canvas re-fits here.
-					if (this._isPresentationStyle()) { return; }
+					// A framed read-only board (presentation chrome, or a plain canvas with a view-area
+					// frame) is width-fit, and the flow's own ResizeObserver owns re-fitting it, so the
+					// moodboard does NOT contain-fit on resize (that would fight the width-fit). Only an
+					// unframed read-only canvas re-fits here.
+					if (this._isPresentationStyle() || this._hasViewAreaFrame()) { return; }
 					this.fitBoard();
 				});
 				window.addEventListener('resize', this._boundOnResize);
@@ -501,14 +517,15 @@ class PictViewMoodboard extends libPictView
 		return super.onAfterRender(pRenderable, pRenderDestinationAddress, pRecord, pContent);
 	}
 
-	// Fit the board into view. A plain canvas contains every card with a little padding (zoomToFit pads
-	// 50px). A presentation style (jumbotron / background) instead fits the view-area frame's WIDTH to
-	// the container (content bleeds past), matching how it displays. Used on load (both modes) and when
-	// a read-only canvas board's window resizes.
+	// Fit the board into view. A read-only board whose author framed a view area fits that frame's WIDTH
+	// to the container -- the configured visible area, content bleeding past the edges -- regardless of the
+	// chosen chrome (a presentation style always carries a frame; a plain canvas only if one was drawn). A
+	// board with no view-area frame contains every card with a little padding instead (zoomToFit pads 50px).
+	// Used on load (both modes) and when a read-only board's window resizes.
 	fitBoard()
 	{
 		if (!this._FlowView) { return; }
-		if (this._isPresentationStyle())
+		if (!this._isEditable() && this._hasViewAreaFrame())
 		{
 			if (typeof this._FlowView.fitToWidth === 'function') { this._FlowView.fitToWidth(); }
 			return;
@@ -645,14 +662,45 @@ class PictViewMoodboard extends libPictView
 		return '';
 	}
 
+	// Resolve a host THEME color token to a CONCRETE value. The flow paints the board background as an SVG
+	// <rect> fill, and SVG presentation attributes do NOT resolve var(), so the board default cannot be a raw
+	// var() -- it has to be read off the cascade with getComputedStyle and handed over as a literal color.
+	// Reads from the board's own element so a theme scoped to a wrapper (not :root) still resolves; returns
+	// the first token that has a value, else the fallback.
+	_resolveThemeColor(pVars, pFallback)
+	{
+		if (typeof window === 'undefined' || typeof window.getComputedStyle !== 'function') { return pFallback; }
+		let tmpEl = (this._FlowView && this._FlowView._SVGElement) ? this._FlowView._SVGElement : null;
+		if (!tmpEl && typeof document !== 'undefined') { tmpEl = document.getElementById('MB-Root-' + this.options.ViewIdentifier) || document.body; }
+		if (!tmpEl) { return pFallback; }
+		let tmpStyle = window.getComputedStyle(tmpEl);
+		let tmpVars = Array.isArray(pVars) ? pVars : [pVars];
+		for (let i = 0; i < tmpVars.length; i++)
+		{
+			let tmpValue = (tmpStyle.getPropertyValue(tmpVars[i]) || '').trim();
+			if (tmpValue) { return tmpValue; }
+		}
+		return pFallback;
+	}
+
+	// The board canvas color when the author has not picked one: the host theme's surface color, so a board
+	// follows a light / dark theme by default instead of a baked light gray.
+	_defaultBoardBackground()
+	{
+		return this._resolveThemeColor([ '--theme-color-background-secondary', '--theme-color-background-primary' ], '#f4f6f9');
+	}
+
 	// The board background is now native to pict-section-flow (setBackground / ViewState.Background).
-	// Migrate any legacy ViewState.BackgroundColor onto the native shape, then ask the flow to repaint;
-	// the flow falls back to the moodboard profile's flat canvas color when none is set.
+	// Migrate any legacy ViewState.BackgroundColor onto the native shape, point the flow's DEFAULT (the
+	// fallback when nothing is on ViewState) at the resolved theme color, then ask the flow to repaint.
+	// resolveBackground prefers ViewState.Background, so an author's pick still wins; refreshed every apply,
+	// so a theme switch recolors an unpainted board.
 	_applyBackground()
 	{
 		if (!this._FlowView) { return; }
 		let tmpVS = this._FlowView._FlowData ? this._FlowView._FlowData.ViewState : null;
 		if (tmpVS && tmpVS.BackgroundColor && !tmpVS.Background) { tmpVS.Background = { Style: 'solid', Color: tmpVS.BackgroundColor }; }
+		this._FlowView.options.Background = { Style: 'solid', Color: this._defaultBoardBackground() };
 		if (typeof this._FlowView._applyBackground === 'function') { this._FlowView._applyBackground(); }
 	}
 
@@ -666,14 +714,22 @@ class PictViewMoodboard extends libPictView
 		else { setTimeout(function () { tmpSelf._applyBackground(); }, 32); }
 	}
 
-	// Editable boards only (the toolbar Background button + its popover). An empty string clears it.
+	// The gear Appearance control. A real color is stored on ViewState.Background (it wins over the theme
+	// default); an empty string ("No background") CLEARS the stored color so the board falls back to the
+	// host theme surface, rather than baking a fixed gray.
 	setBackgroundColor(pColor)
 	{
 		if (!this._FlowView) { return; }
-		// Empty / "no background" falls back to the flat moodboard canvas color. All board colors now
-		// flow through pict-section-flow's native setBackground (stored on ViewState.Background).
-		let tmpColor = (typeof pColor === 'string' && pColor) ? pColor : '#f4f6f9';
-		if (typeof this._FlowView.setBackground === 'function') { this._FlowView.setBackground({ Style: 'solid', Color: tmpColor }); }
+		let tmpVS = this._FlowView._FlowData ? this._FlowView._FlowData.ViewState : null;
+		if (typeof pColor === 'string' && pColor)
+		{
+			if (typeof this._FlowView.setBackground === 'function') { this._FlowView.setBackground({ Style: 'solid', Color: pColor }); }
+		}
+		else
+		{
+			if (tmpVS) { delete tmpVS.Background; delete tmpVS.BackgroundColor; }
+			this._applyBackground();
+		}
 		this._emitChange();
 	}
 
@@ -744,19 +800,40 @@ class PictViewMoodboard extends libPictView
 	// True when the board is presenting as a width-fit surface right now (only in view mode).
 	_isPresentationStyle() { let tmpStyle = this._effectiveStyle(); return tmpStyle === 'jumbotron' || tmpStyle === 'background'; }
 
+	// True when the board carries a usable view-area frame -- the box the author framed as the visible area.
+	// A read-only board with one is fit to that frame's width (the configured visible area) no matter the
+	// display chrome, so "view mode respects the visible area" holds for a plain canvas too, not just a
+	// jumbotron / background. Matches the existence check _ensureFrame uses (a frame needs Width + Height).
+	_hasViewAreaFrame()
+	{
+		let tmpFrame = (this._FlowView && typeof this._FlowView.getFrame === 'function') ? this._FlowView.getFrame() : null;
+		return !!(tmpFrame && tmpFrame.Width > 0 && tmpFrame.Height > 0);
+	}
+
 	// Public read of the stored display style + background top margin, for a host that sizes the board's
 	// container (a jumbotron band, a background backdrop) and reacts to onDisplayStyleChanged.
 	getDisplayStyle() { return this._displayStyle(); }
 	getDisplayTopMargin() { return this._displayTopMargin(); }
 	getEffectiveDisplayStyle() { return this._effectiveStyle(); }
 
-	// The presentation top margin (background only; a jumbotron sits flush). Same lookup order as the style.
+	// The presentation top margin (background only): where a host's overlaying content begins. Same lookup
+	// order as the style so it rides ViewState through getBoard / setBoard.
 	_displayTopMargin()
 	{
 		let tmpVS = (this._FlowView && this._FlowView._FlowData) ? this._FlowView._FlowData.ViewState : null;
 		if (tmpVS && typeof tmpVS.DisplayStyleTopMargin === 'number') { return tmpVS.DisplayStyleTopMargin; }
 		if (this._PendingBoard && this._PendingBoard.ViewState && typeof this._PendingBoard.ViewState.DisplayStyleTopMargin === 'number') { return this._PendingBoard.ViewState.DisplayStyleTopMargin; }
 		if (this._PendingDisplayStyle && typeof this._PendingDisplayStyle.TopMargin === 'number') { return this._PendingDisplayStyle.TopMargin; }
+		return 0;
+	}
+
+	// The jumbotron band height OVERRIDE (jumbotron only; 0 = auto, i.e. the scaled view-area frame height).
+	// Same lookup order as the margin so it rides ViewState through getBoard / setBoard.
+	_displayHeight()
+	{
+		let tmpVS = (this._FlowView && this._FlowView._FlowData) ? this._FlowView._FlowData.ViewState : null;
+		if (tmpVS && typeof tmpVS.DisplayStyleHeight === 'number') { return tmpVS.DisplayStyleHeight; }
+		if (this._PendingBoard && this._PendingBoard.ViewState && typeof this._PendingBoard.ViewState.DisplayStyleHeight === 'number') { return this._PendingBoard.ViewState.DisplayStyleHeight; }
 		return 0;
 	}
 
@@ -785,7 +862,8 @@ class PictViewMoodboard extends libPictView
 		return tmpStyle;
 	}
 
-	// Set just the background top margin (the gear control). Re-applies + persists.
+	// Set just the background top margin -- where overlaying content begins (the gear control). Re-applies
+	// + persists.
 	setDisplayMargin(pValue)
 	{
 		let tmpNum = parseInt(pValue, 10);
@@ -795,6 +873,18 @@ class PictViewMoodboard extends libPictView
 		this._applyDisplayStyle();
 		this._emitChange();
 		return tmpMargin;
+	}
+
+	// Set the jumbotron band height override (the gear control; 0 / blank = auto = scaled frame height).
+	// Re-applies + persists, then re-emits the display style so the host re-sizes the band.
+	setDisplayHeight(pValue)
+	{
+		let tmpNum = parseInt(pValue, 10);
+		let tmpHeight = isNaN(tmpNum) ? 0 : Math.max(0, tmpNum);
+		if (this._FlowView && this._FlowView._FlowData) { this._FlowView._FlowData.ViewState.DisplayStyleHeight = tmpHeight; }
+		this._applyDisplayStyle();
+		this._emitChange();
+		return tmpHeight;
 	}
 
 	// Establish the flow sub-view's behavior for the current EFFECTIVE style. Idempotent and cheap — run
@@ -820,17 +910,22 @@ class PictViewMoodboard extends libPictView
 		// The "set view area" handles are an edit-mode affordance; off whenever the board is not editable.
 		if (!this._isEditable() && this._FrameEditing && typeof this._FlowView.setFrameEditing === 'function') { this._FrameEditing = false; this._FlowView.setFrameEditing(false); }
 
-		if (tmpEffective === 'jumbotron' || tmpEffective === 'background')
+		// A presentation style (jumbotron / background) always fits a view-area frame, seeding one from the
+		// content bounds if the author drew none. A plain canvas honors only a frame actually drawn. Either
+		// way, a READ-ONLY board with a view-area frame becomes a width-fit presentation surface -- the
+		// configured visible area -- so view mode respects it regardless of the chosen chrome.
+		let tmpPresentation = (tmpEffective === 'jumbotron' || tmpEffective === 'background');
+		if (tmpPresentation) { this._ensureFrame(); }
+		let tmpWidthFit = !this._isEditable() && this._hasViewAreaFrame();
+
+		if (tmpWidthFit)
 		{
-			// A jumbotron sits flush at the top of its band (margin 0); only a background honors a top
-			// margin (e.g. to clear a fixed page header).
-			let tmpMargin = (tmpEffective === 'background') ? this._displayTopMargin() : 0;
+			// The board art is width-fit FLUSH at the top of its surface (FitTopMargin 0). The display
+			// margin is NOT a board offset -- a host that overlays content on a backdrop applies it as the
+			// content's top inset (where the overlaying content starts), read from onDisplayStyleChanged.
 			this._FlowView.options.FitMode = 'width';
-			this._FlowView.options.FitTopMargin = tmpMargin;
+			this._FlowView.options.FitTopMargin = 0;
 			if (typeof this._FlowView.setReadOnly === 'function' && !this._FlowView.isReadOnly()) { this._FlowView.setReadOnly(true); }
-			// A presentation surface fits the WIDTH of a view-area frame; seed one from the content bounds
-			// if the board has none yet.
-			this._ensureFrame();
 			if (typeof this._FlowView._setupFitObserver === 'function') { this._FlowView._setupFitObserver(); }
 		}
 		else
@@ -841,11 +936,12 @@ class PictViewMoodboard extends libPictView
 			if (typeof this._FlowView.setReadOnly === 'function' && this._FlowView.isReadOnly() !== tmpReadOnly) { this._FlowView.setReadOnly(tmpReadOnly); }
 		}
 
-		// Root classes reflect the EFFECTIVE presentation: editing a jumbotron board still shows the canvas
-		// editing chrome; a presentation board hides the chrome + the dashed view-area guide.
+		// Root classes reflect how the board actually displays: a width-fit framed view (presentation chrome
+		// or a plain canvas honoring its view area) hides the editing chrome + the dashed guide; an editable
+		// or unframed canvas keeps them. The chrome-specific classes still track the explicit style.
 		if (tmpRoot)
 		{
-			tmpRoot.classList.toggle('mb-presentation', tmpEffective !== 'canvas');
+			tmpRoot.classList.toggle('mb-presentation', tmpWidthFit);
 			tmpRoot.classList.toggle('mb-style-jumbotron', tmpEffective === 'jumbotron');
 			tmpRoot.classList.toggle('mb-style-background', tmpEffective === 'background');
 		}
@@ -859,7 +955,11 @@ class PictViewMoodboard extends libPictView
 	{
 		let tmpEffective = this._effectiveStyle();
 		let tmpMargin = this._displayTopMargin();
-		let tmpKey = tmpEffective + ':' + tmpMargin;
+		// Report the RESOLVED board color (author pick, else the theme surface) so a host that paints the
+		// board's own element for a behind-content backdrop can match it -- the flow's internal SVG fill does
+		// not composite reliably when the board is an absolute full-bleed layer.
+		let tmpBackground = this._boardBackground() || this._defaultBoardBackground();
+		let tmpKey = tmpEffective + ':' + tmpMargin + ':' + tmpBackground;
 		if (tmpKey === this._LastDisplayStyleKey) { return; }
 		this._LastDisplayStyleKey = tmpKey;
 		if (typeof this.options.onDisplayStyleChanged === 'function')
@@ -870,6 +970,7 @@ class PictViewMoodboard extends libPictView
 					effectiveStyle: tmpEffective,
 					editable: this._isEditable(),
 					topMargin: tmpMargin,
+					backgroundColor: tmpBackground,
 					jumbotronHeight: this.jumbotronHeight()
 				});
 		}
@@ -984,14 +1085,21 @@ class PictViewMoodboard extends libPictView
 			'<button class="mb-gear-swatch" style="background:' + pColor + '" title="Board color ' + pColor + '" onclick="_Pict.views[\'' + tmpViewID + '\'].setBackgroundColor(\'' + pColor + '\')"></button>').join('');
 		let tmpHTML = '<div class="mb-gear-field"><span class="mb-gear-sub">Board color</span><div class="mb-gear-swatches">'
 			+ tmpSwatches
-			+ '<input type="color" class="mb-gear-color" title="Pick a color" value="' + (tmpColor || '#ffffff') + '" onchange="_Pict.views[\'' + tmpViewID + '\'].setBackgroundColor(this.value)">'
+			+ '<input type="color" class="mb-gear-color" title="Pick a color" value="' + (tmpColor || this._defaultBoardBackground()) + '" onchange="_Pict.views[\'' + tmpViewID + '\'].setBackgroundColor(this.value)">'
 			+ '<button class="mb-gear-swatch mb-gear-none" title="No background" onclick="_Pict.views[\'' + tmpViewID + '\'].setBackgroundColor(\'\')"></button>'
 			+ '</div></div>';
-		// The backdrop top margin only matters for the background display style.
+		// Background: the margin sets WHERE THE OVERLAYING CONTENT BEGINS (the board art shows above it),
+		// not an offset of the board art itself.
 		if (this._displayStyle() === 'background')
 		{
-			tmpHTML += '<div class="mb-gear-field"><span class="mb-gear-sub">Backdrop top margin</span>'
-				+ '<input type="number" class="mb-gear-margin" min="0" max="400" step="8" value="' + this._displayTopMargin() + '" onchange="_Pict.views[\'' + tmpViewID + '\'].setDisplayMargin(this.value)"></div>';
+			tmpHTML += '<div class="mb-gear-field"><span class="mb-gear-sub">Content starts at (px)</span>'
+				+ '<input type="number" class="mb-gear-margin" min="0" max="900" step="8" value="' + this._displayTopMargin() + '" onchange="_Pict.views[\'' + tmpViewID + '\'].setDisplayMargin(this.value)"></div>';
+		}
+		// Jumbotron: an explicit band height; blank / 0 = auto (the scaled view-area frame height).
+		if (this._displayStyle() === 'jumbotron')
+		{
+			tmpHTML += '<div class="mb-gear-field"><span class="mb-gear-sub">Band height (blank = auto)</span>'
+				+ '<input type="number" class="mb-gear-margin" min="0" max="900" step="10" placeholder="auto" value="' + (this._displayHeight() || '') + '" onchange="_Pict.views[\'' + tmpViewID + '\'].setDisplayHeight(this.value)"></div>';
 		}
 		return tmpHTML;
 	}
@@ -1004,7 +1112,8 @@ class PictViewMoodboard extends libPictView
 	{
 		if (!this._FlowView || typeof this._FlowView.setFrame !== 'function') { return null; }
 		let tmpFrame = this._FlowView.setFrame(pFrame);
-		if (this._isPresentationStyle()) { this.fitBoard(); }
+		// A read-only framed board (presentation or a plain canvas with a view area) re-fits immediately.
+		if (!this._isEditable() && this._hasViewAreaFrame()) { this.fitBoard(); }
 		this._emitChange();
 		return tmpFrame;
 	}
@@ -1095,10 +1204,13 @@ class PictViewMoodboard extends libPictView
 		return Math.round(pFrame.Height * (pContainerWidth / pFrame.Width));
 	}
 
-	// The current jumbotron band height for this board's container width (the scaled frame height). A
-	// host can read this to size a hero band; returns 0 when there is no frame / canvas yet.
+	// The current jumbotron band height for this board's container width. An explicit override (the gear
+	// "Band height" control) wins; otherwise it is the scaled view-area frame height. A host reads this to
+	// size a hero band; returns 0 when there is no override and no frame / canvas yet.
 	jumbotronHeight()
 	{
+		let tmpOverride = this._displayHeight();
+		if (tmpOverride > 0) { return tmpOverride; }
 		let tmpFrame = this.getFrame();
 		let tmpWidth = 0;
 		if (this._FlowView && this._FlowView._SVGElement && typeof this._FlowView._SVGElement.getBoundingClientRect === 'function')
@@ -1211,8 +1323,26 @@ class PictViewMoodboard extends libPictView
 			// Give a freshly drawn link a sensible default appearance (a thin gray line with an arrow at
 			// the finish end) so it looks intentional before anyone opens its panel.
 			this._FlowView._EventHandlerProvider.registerHandler('onConnectionCreated', (pConn) => this._onConnectionCreated(pConn));
+			// The inline rotate handle writes node.Rotation + re-renders the card, but an already-open
+			// properties panel keeps its once-rendered body, so its Rotation slider goes stale. Push the new
+			// angle back into the open panel's slider so the handle and the panel stay in two-way sync.
+			this._FlowView._EventHandlerProvider.registerHandler('onNodeRotated', (pNode) => this._syncPanelRotation(pNode));
 			this._PanelHandlerWired = true;
 		}
+	}
+
+	// Push a node's current rotation into its open properties panel slider. The flow renders a panel's body
+	// once, so a rotate-handle drag (which writes node.Rotation + re-renders the card) would otherwise leave
+	// the slider showing the old angle. Only one moodboard panel is open at a time (_keepOnlyPanel), so the
+	// single .mbp-range is the right one.
+	_syncPanelRotation(pNode)
+	{
+		if (typeof document === 'undefined' || !this._FlowView) { return; }
+		let tmpNode = (pNode && typeof pNode === 'object') ? pNode : (typeof this._FlowView.getNode === 'function' ? this._FlowView.getNode(pNode) : null);
+		if (!tmpNode) { return; }
+		let tmpRoot = document.getElementById('MB-Root-' + this.options.ViewIdentifier);
+		let tmpRange = tmpRoot ? tmpRoot.querySelector('.mbp-range') : null;
+		if (tmpRange) { tmpRange.value = (typeof tmpNode.Rotation === 'number') ? tmpNode.Rotation : 0; }
 	}
 
 	// Strip the flow's default ports from a palette-added content card (a connector keeps its ports).
@@ -1484,15 +1614,61 @@ class PictViewMoodboard extends libPictView
 		this._emitChange();
 	}
 
-	setStickerUrl(pNodeHash, pUrl)
+	setStickerUrl(pNodeHash, pUrl, pMeta)
 	{
 		if (!this._FlowView) { return; }
 		let tmpNode = this._FlowView.getNode(pNodeHash);
 		if (!tmpNode) { return; }
 		if (!tmpNode.Data) { tmpNode.Data = {}; }
 		tmpNode.Data.StickerUrl = pUrl;
+		// Picking a library shape carries its identity + colors so the panel can offer color overrides.
+		if (pMeta) { this._stampStickerMeta(tmpNode, pMeta); }
 		let tmpImg = this._cardElement(pNodeHash, '.mb-sticker');
 		if (tmpImg) { tmpImg.setAttribute('src', pUrl || ''); }
+		this._FlowView.marshalFromView();
+		this._emitChange();
+	}
+
+	// Carry a picked shape's identity + colors onto the node so its panel can offer color overrides. A
+	// non-shape sticker (upload / built-in) gets no shape fields, so its color controls stay hidden.
+	_stampStickerMeta(pNode, pMeta)
+	{
+		if (pNode && pNode.Data && pMeta && typeof pMeta.ShapeCollection === 'string' && pMeta.ShapeCollection)
+		{
+			pNode.Data.ShapeCollection = pMeta.ShapeCollection;
+			pNode.Data.ShapeName = pMeta.ShapeName || '';
+			pNode.Data.Duotone = !!pMeta.Duotone;
+			if (typeof pNode.Data.ColorPrimary !== 'string' || !pNode.Data.ColorPrimary) { pNode.Data.ColorPrimary = pMeta.ColorPrimary || '#1f3a52'; }
+			if (typeof pNode.Data.ColorSecondary !== 'string' || !pNode.Data.ColorSecondary) { pNode.Data.ColorSecondary = pMeta.ColorSecondary || '#9cc0e0'; }
+		}
+		this._stampStickerColorFlags(pNode);
+	}
+
+	// The panel reads these as show-classes (default hidden, so a non-shape or legacy sticker shows no
+	// color controls): the whole color row appears only for a library shape; the second (silhouette) color
+	// only for a duotone shape.
+	_stampStickerColorFlags(pNode)
+	{
+		if (!pNode || !pNode.Data) { return; }
+		pNode.Data._ColorShow = pNode.Data.ShapeCollection ? 'mbp-show' : '';
+		pNode.Data._SecColorShow = (pNode.Data.ShapeCollection && pNode.Data.Duotone) ? 'mbp-show' : '';
+	}
+
+	// Override a placed library-shape sticker's color(s). Rebuilds the recolored URL through the sticker
+	// source (which owns the shape-library URL convention) and swaps the card image in place.
+	setStickerColor(pNodeHash, pSlot, pColor)
+	{
+		if (!this._FlowView) { return; }
+		let tmpNode = this._FlowView.getNode(pNodeHash);
+		if (!tmpNode || !tmpNode.Data || !tmpNode.Data.ShapeCollection) { return; }
+		if (pSlot === 'sec') { tmpNode.Data.ColorSecondary = pColor; }
+		else { tmpNode.Data.ColorPrimary = pColor; }
+		let tmpUrl = (this._StickerSource && typeof this._StickerSource.recolorURL === 'function')
+			? this._StickerSource.recolorURL(tmpNode.Data.ShapeCollection, tmpNode.Data.ShapeName, { pri: tmpNode.Data.ColorPrimary, sec: tmpNode.Data.ColorSecondary })
+			: tmpNode.Data.StickerUrl;
+		if (tmpUrl) { tmpNode.Data.StickerUrl = tmpUrl; }
+		let tmpImg = this._cardElement(pNodeHash, '.mb-sticker');
+		if (tmpImg) { tmpImg.setAttribute('src', tmpNode.Data.StickerUrl || ''); }
 		this._FlowView.marshalFromView();
 		this._emitChange();
 	}
@@ -1630,16 +1806,43 @@ class PictViewMoodboard extends libPictView
 		if (!pConnection.Data) { pConnection.Data = {}; }
 		// Already styled (e.g. a link loaded from a saved board) -- leave it alone.
 		if (typeof pConnection.Data.TargetMarker !== 'undefined') { return; }
-		pConnection.Data.StrokeColor = '#5b6376';
-		pConnection.Data.StrokeWidth = 2;
-		pConnection.Data.StrokeStyle = 'solid';
-		pConnection.Data.SourceMarker = 'none';
-		pConnection.Data.TargetMarker = 'arrow';
+		let tmpDefaults = this._connectionDefaults();
+		pConnection.Data.StrokeColor = tmpDefaults.StrokeColor;
+		pConnection.Data.StrokeWidth = tmpDefaults.StrokeWidth;
+		pConnection.Data.StrokeStyle = tmpDefaults.StrokeStyle;
+		pConnection.Data.SourceMarker = tmpDefaults.SourceMarker;
+		pConnection.Data.TargetMarker = tmpDefaults.TargetMarker;
 		pConnection.Data.Label = '';
+		if (tmpDefaults.EdgeTheme) { pConnection.Data.EdgeTheme = tmpDefaults.EdgeTheme; }
 		this._stampConnectionSelects(pConnection.Data);
 		this._FlowView.renderFlow();
 		this._FlowView.marshalFromView();
 		this._emitChange();
+	}
+
+	// The default style for a NEWLY drawn link. A host (plansheet) can push a per-Drafting-Kit style via the
+	// ConnectionDefaults option or setConnectionDefaults(); missing keys fall back to the built-in neutral link.
+	_connectionDefaults()
+	{
+		let tmpKit = (this.options && this.options.ConnectionDefaults) ? this.options.ConnectionDefaults : {};
+		return {
+			StrokeColor: tmpKit.StrokeColor || '#5b6376',
+			StrokeWidth: (typeof tmpKit.StrokeWidth === 'number') ? tmpKit.StrokeWidth : 2,
+			StrokeStyle: tmpKit.StrokeStyle || 'solid',
+			SourceMarker: tmpKit.SourceMarker || 'none',
+			TargetMarker: tmpKit.TargetMarker || 'arrow',
+			EdgeTheme: tmpKit.EdgeTheme || ''
+		};
+	}
+
+	// Push a per-kit default connection style at runtime (after the view exists). The curve (EdgeTheme) is set
+	// flow-level so it applies to every link; stroke + markers apply to each newly drawn link (a per-link
+	// override on a saved link still wins). A host calls this when a kit-scoped board opens.
+	setConnectionDefaults(pDefaults)
+	{
+		this.options.ConnectionDefaults = pDefaults || {};
+		let tmpCurve = this.options.ConnectionDefaults.EdgeTheme;
+		if (tmpCurve && this._FlowView && typeof this._FlowView.setEdgeTheme === 'function') { this._FlowView.setEdgeTheme(tmpCurve); }
 	}
 
 	// Find a connection by hash, mutate its Data, refresh its panel-select bindings, and re-render.
@@ -1671,6 +1874,11 @@ class PictViewMoodboard extends libPictView
 		};
 		fStampMarker(pData.SourceMarker, 'Src');
 		fStampMarker(pData.TargetMarker, 'Tgt');
+		// Curve type rides Data.EdgeTheme (the flow's per-connection edge-theme override); default Bezier.
+		let tmpCurve = pData.EdgeTheme || 'Bezier';
+		pData.CurveBezierSel = (tmpCurve === 'Bezier') ? 'selected' : '';
+		pData.CurveElbowSel = (tmpCurve === 'Orthogonal') ? 'selected' : '';
+		pData.CurveStraightSel = (tmpCurve === 'Straight') ? 'selected' : '';
 	}
 
 	setConnectionColor(pConnectionHash, pColor) { this._updateConnection(pConnectionHash, (pData) => { pData.StrokeColor = pColor; }); }
@@ -1678,6 +1886,7 @@ class PictViewMoodboard extends libPictView
 	setConnectionLineStyle(pConnectionHash, pStyle) { this._updateConnection(pConnectionHash, (pData) => { pData.StrokeStyle = (pStyle === 'dashed' || pStyle === 'dotted') ? pStyle : 'solid'; }); }
 	setConnectionSourceMarker(pConnectionHash, pMarker) { this._updateConnection(pConnectionHash, (pData) => { pData.SourceMarker = pMarker; }); }
 	setConnectionTargetMarker(pConnectionHash, pMarker) { this._updateConnection(pConnectionHash, (pData) => { pData.TargetMarker = pMarker; }); }
+	setConnectionCurve(pConnectionHash, pCurve) { this._updateConnection(pConnectionHash, (pData) => { pData.EdgeTheme = (pCurve === 'Orthogonal' || pCurve === 'Straight') ? pCurve : 'Bezier'; }); }
 
 	// The label updates in place (no full re-render) so typing keeps the panel input's focus; the empty
 	// label element is always rendered for a styled link, so it exists to update.
@@ -1847,7 +2056,7 @@ class PictViewMoodboard extends libPictView
 		if (!tmpItem) { return; }
 		if (this._PickerTargetHash)
 		{
-			if (tmpGallery.Mode === 'sticker') { this.setStickerUrl(this._PickerTargetHash, tmpItem.Url); }
+			if (tmpGallery.Mode === 'sticker') { this.setStickerUrl(this._PickerTargetHash, tmpItem.Url, tmpItem.Metadata); }
 			else { this.setImageUrl(this._PickerTargetHash, tmpItem.Url); }
 			this.closeGallery();
 			return;
@@ -1905,6 +2114,7 @@ class PictViewMoodboard extends libPictView
 		if (tmpNode)
 		{
 			tmpNode.Ports = [];
+			this._stampStickerMeta(tmpNode, tmpMeta);
 			this._FlowView.selectNode(tmpNode.Hash);
 			this._FlowView.renderFlow();
 			this._FlowView.marshalFromView();
@@ -1938,6 +2148,11 @@ class PictViewMoodboard extends libPictView
 
 	getBoard()
 	{
+		// A board still waiting to apply (the flow's data-manager service has not wired up yet) means the live
+		// flow is empty. Report the PENDING board instead, so a host autosave that fires during the load
+		// window persists the real content rather than overwriting it with an empty board (the content-loss
+		// race). Once it applies, _PendingBoard is cleared and the live flow is authoritative.
+		if (this._PendingBoard) { return JSON.parse(JSON.stringify(this._PendingBoard)); }
 		if (!this._FlowView) { return { Nodes: [], Connections: [], ViewState: { PanX: 0, PanY: 0, Zoom: 1 } }; }
 		let tmpBoard = this._FlowView.getFlowData();
 		// A saved board is content (cards + viewport), not transient editor state: drop any open
