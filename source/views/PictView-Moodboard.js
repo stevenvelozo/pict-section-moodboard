@@ -293,11 +293,11 @@ const _ViewConfiguration =
 		.mb-gallery-item:hover { border-color: var(--theme-color-brand-primary, #2880a6); }
 		.mb-gallery-item img { width: 100%; height: 92px; object-fit: cover; display: block; background: #e9edf2; }
 		.mb-gallery-item-name { font-size: 11px; color: var(--theme-color-text-secondary, #5b6376); padding: 4px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-		/* Sticker mode: compact, near-square tiles with the cutout shrunk to fit (not a stretched
+		/* Sticker mode: compact, square tiles with the cutout shrunk to fit (not a stretched
 		   thumbnail). box-sizing keeps the padding inside the tile width so the image never overflows. */
 		.mb-gallery-mode-sticker .mb-gallery-grid { grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); }
 		.mb-gallery-mode-sticker .mb-gallery-item { align-items: center; }
-		.mb-gallery-mode-sticker .mb-gallery-item img { width: 100%; height: 82px; box-sizing: border-box; padding: 14px; object-fit: contain; background: transparent; }
+		.mb-gallery-mode-sticker .mb-gallery-item img { width: 100%; aspect-ratio: 1 / 1; height: auto; box-sizing: border-box; padding: 14px; object-fit: contain; background: transparent; }
 		.mb-gallery-mode-sticker .mb-gallery-item-name { width: 100%; text-align: center; padding-bottom: 6px; }
 		.mb-gallery-empty { grid-column: 1 / -1; text-align: center; color: var(--theme-color-text-secondary, #8a93a5); padding: 44px 16px; }
 	`,
@@ -1223,6 +1223,15 @@ class PictViewMoodboard extends libPictView
 		{
 			pNode.Ports = [];
 			if (this._FlowView && typeof this._FlowView.renderFlow === 'function') { this._FlowView.renderFlow(); }
+		}
+		// A sticker card is empty art until you pick one, and from the palette you always then want to
+		// pick -- so open the picker straight away (targeting this card) instead of making the panel and
+		// its "Pick a sticker" button a second and third step. Skip it when the card already carries art:
+		// the gallery's own placement path (_addStickerCard) adds the node with a StickerUrl, so picking
+		// from the gallery must not reopen the gallery.
+		if (pNode.Type === 'MoodSticker' && pNode.Hash && !(pNode.Data && pNode.Data.StickerUrl))
+		{
+			this.openPickerForCard(pNode.Hash, 'sticker');
 		}
 	}
 

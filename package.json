@@ -1,6 +1,6 @@
 {
     "name": "pict-section-moodboard",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Free-form moodboard canvas (draggable, resizable image tiles, notes, big text, and stickers, with board backgrounds and curated fonts) built on pict-section-flow",
     "main": "source/Pict-Section-Moodboard.js",
     "files": [
